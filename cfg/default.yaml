@@ -1,0 +1,118 @@
+_target_: agent.pc_hmd_agent.PCHMDAgent
+town: town10
+towns:
+  town03:
+    env_name: CarlaTown03Cross-v0
+    map: Town03_Opt
+    checkpoint: ""
+  town05:
+    env_name: CarlaTown05Cross-v0
+    map: Town05_Opt
+    checkpoint: ""
+  town10:
+    env_name: CarlaTown10Cross-v0
+    map: Town10HD_Opt
+    checkpoint: ${oc.env:PC_HMD_ROOT}/checkpoint/town10.pt
+carla_env_interface: ${towns.${town}.env_name}
+env_name: ${carla_env_interface}
+name: ${env_name}_pc_hmd
+seed: 42
+device: cuda:0
+visualize: true
+obs_dim: 128
+action_dim: 2
+denoising_steps: 20
+ft_denoising_steps: 20
+cond_steps: 1
+future_steps: 3
+horizon_steps: 1
+act_steps: 1
+env:
+  n_envs: 1
+  name: ${env_name}
+  max_episode_steps: 1000
+  reset_at_iteration: false
+  save_video: false
+  wrappers: {}
+  specific:
+    port: ${run.carla_port}
+run:
+  checkpoint_path: ${towns.${town}.checkpoint}
+  checkpoint_dir: ""
+  checkpoint_pattern: state_*.pt
+  checkpoint_step: -1
+  max_checkpoints: 1
+  episodes_per_checkpoint: 500
+  max_episode_steps: 1000
+  use_target_action_refine: true
+  carla_port: 2000
+  carla_map: ${towns.${town}.map}
+  carla_quality: Epic
+  carla_startup_seconds: 120
+model:
+  _target_: model.diffusion.diffusion_ppo.PPODiffusion
+  gamma_denoising: 0.95
+  diffusion_iter: 5
+  action_lr: 1e-4
+  update_times: 20
+  clip_ploss_coef: 0.02
+  clip_ploss_coef_base: 0.01
+  clip_ploss_coef_rate: 3
+  randn_clip_value: 3
+  min_sampling_denoising_std: 0.1
+  min_logprob_denoising_std: 0.1
+  gamma: 0.99
+  nstep: 1
+  params: {}
+  max_grad_norm: 1
+  actor:
+    _target_: model.diffusion.mlp_diffusion.DiffusionMLP
+    time_dim: 16
+    mlp_dims:
+      - 512
+      - 512
+      - 512
+    activation_type: ReLU
+    residual_style: true
+    cond_dim: ${mul:${obs_dim},${cond_steps}}
+    horizon_steps: ${horizon_steps}
+    action_dim: ${action_dim}
+    action_steps: ${act_steps}
+  critic:
+    _target_: model.common.critic.DistributionalDoubleQ
+    cond_dim: ${mul:${obs_dim},${cond_steps}}
+    action_dim: ${action_dim}
+    action_steps: ${act_steps}
+    mlp_dims:
+      - 256
+      - 256
+      - 256
+    activation_type: Mish
+    residual_style: true
+    v_min: 0
+    v_max: 5
+    num_atoms: 51
+    device: ${device}
+  ft_denoising_steps: ${ft_denoising_steps}
+  horizon_steps: ${horizon_steps}
+  obs_dim: ${obs_dim}
+  action_dim: ${action_dim}
+  denoising_steps: ${denoising_steps}
+  device: ${device}
+  noise:
+    type: mixed
+    decay: null
+    exp_decay_rate: 0.99
+    lin_decay_iters: 10000
+    std_max: 0.6
+    std_min: 0.05
+    tgt_pol_std: 0.8
+    tgt_pol_noise_bound: 0.2
+hydra:
+  run:
+    dir: .
+  output_subdir: null
+  job_logging:
+    root:
+      level: ERROR
+    disable_existing_loggers: true

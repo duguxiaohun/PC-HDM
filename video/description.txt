@@ -1,0 +1,13 @@
+town 03 town03_time_cut.gif Yield to the green car, the blue car slows down, and the ego vehicle passes quickly
+
+town 03 town03_time_cut1.gif Unable to pass first, yields to the green and black cars
+
+town 05 town05_time_cut.gif Yields to the green car, then the ego vehicle passes quickly
+
+town 05 town05_time_cut1.gif Yields to the purple car, unable to pass first, then yields to the green and blue cars
+
+town 05 town05_time_cut2.gif The purple car slows down, and the ego vehicle passes first
+
+town 10 town10_time_cut.gif Yields in complex traffic conditions, then finds an opportunity to pass
+
+town 10 town10_time_cut1.gif Yields in complex traffic conditions, then finds an opportunity to pass

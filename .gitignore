@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+outputs/
+results/
+logs/
+checkpoint/
+*.pt
+*.pth
+*.ckpt
+*.log
+*.pdf
+main_revised.pdf
+.idea/
+.vscode/
